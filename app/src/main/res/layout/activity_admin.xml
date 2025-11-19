@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="32dp">
+
+        <TextView
+            android:id="@+id/tvAdminTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/admin_panel"
+            android:textSize="48sp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Remaining Time -->
+        <TextView
+            android:id="@+id/tvRemainingTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Оставшееся время: --"
+            android:textSize="28sp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Daily Limit -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Дневной лимит (минуты):"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/etDailyLimit"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:inputType="number"
+                android:padding="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <Button
+                android:id="@+id/btnSetLimit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Установить"
+                android:textSize="20sp"
+                android:padding="16dp" />
+
+        </LinearLayout>
+
+        <!-- Generate Codes -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Генерация кодов:"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <EditText
+                android:id="@+id/etCodeCount"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:inputType="number"
+                android:hint="Количество"
+                android:padding="16dp"
+                android:layout_marginEnd="8dp" />
+
+            <EditText
+                android:id="@+id/etMinutesPerCode"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:inputType="number"
+                android:hint="Минут"
+                android:text="30"
+                android:padding="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <Button
+                android:id="@+id/btnGenerateCodes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Сгенерировать"
+                android:textSize="20sp"
+                android:padding="16dp" />
+
+        </LinearLayout>
+
+        <!-- Codes List -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Список кодов:"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCodes"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Change PIN -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Изменить PIN:"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/etNewPin"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:inputType="number"
+                android:hint="Новый PIN"
+                android:padding="16dp"
+                android:layout_marginEnd="16dp" />
+
+            <Button
+                android:id="@+id/btnChangePin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Изменить"
+                android:textSize="20sp"
+                android:padding="16dp" />
+
+        </LinearLayout>
+
+        <!-- Unlock Button -->
+        <Button
+            android:id="@+id/btnUnlock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Разблокировать"
+            android:textSize="20sp"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Autostart Setting -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Автозапуск приложения:"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Автоматически запускать приложение при включении устройства"
+                android:textSize="20sp"
+                android:textColor="@android:color/white"
+                android:layout_marginEnd="16dp" />
+
+            <Switch
+                android:id="@+id/switchAutostart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <!-- Permissions Status -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Статус разрешений:"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvAccessibilityStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accessibility Service: --"
+            android:textSize="20sp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvAccessibilityInstructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/accessibility_instructions"
+            android:textSize="16sp"
+            android:textColor="@android:color/white"
+            android:padding="12dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnOpenAccessibilitySettings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Настроить Accessibility Service"
+            android:textSize="18sp"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tvUsageStatsStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Usage Stats: --"
+            android:textSize="20sp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvUsageStatsInstructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/usage_stats_instructions"
+            android:textSize="16sp"
+            android:textColor="@android:color/white"
+            android:padding="12dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnOpenUsageStatsSettings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Настроить Usage Stats"
+            android:textSize="18sp"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Message -->
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="20sp"
+            android:textColor="@android:color/holo_green_light"
+            android:layout_marginTop="16dp"
+            android:minHeight="32dp" />
+
+        <!-- Exit Button -->
+        <Button
+            android:id="@+id/btnExit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Выход"
+            android:textSize="20sp"
+            android:padding="16dp"
+            android:layout_marginTop="32dp" />
+
+    </LinearLayout>
+
+</ScrollView>
+

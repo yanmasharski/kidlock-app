@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">KidLock</string>
+    <string name="admin_panel">Админ-панель</string>
+    <string name="accessibility_service_description">Служба KidLock для контроля времени использования приложений на Android TV. Включите эту службу для автоматической блокировки приложений при исчерпании времени. Без этой службы приложение не сможет блокировать доступ к другим приложениям.</string>
+    <string name="time_limit_reached">Лимит времени исчерпан</string>
+    <string name="time_limit_reached_message">Время использования телевизора закончилось. Введите код для продолжения.</string>
+    <string name="time_limit_notifications">Уведомления о лимите времени</string>
+    <string name="accessibility_instructions">Для работы блокировки приложений необходимо включить Accessibility Service:\n\n1. Нажмите кнопку \"Настроить Accessibility Service\"\n2. Найдите \"KidLock\" в списке служб\n3. Включите переключатель рядом с KidLock\n4. Подтвердите включение службы\n\nПосле включения служба будет автоматически блокировать приложения при исчерпании времени.</string>
+    <string name="usage_stats_instructions">Для отслеживания времени использования приложений необходимо предоставить разрешение Usage Stats:\n\n1. Нажмите кнопку \"Настроить Usage Stats\"\n2. Найдите \"KidLock\" в списке приложений\n3. Включите переключатель \"Разрешить доступ к статистике использования\"\n4. Вернитесь в приложение\n\nБез этого разрешения приложение не сможет отслеживать время использования других приложений.</string>
+</resources>
