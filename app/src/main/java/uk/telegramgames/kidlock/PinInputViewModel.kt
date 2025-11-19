@@ -21,18 +21,18 @@ class PinInputViewModel(application: Application) : AndroidViewModel(application
         _pinInput.value = ""
     }
 
+    fun setPinInput(pin: String) {
+        // InputFilter уже обработал фильтрацию и регистр, просто сохраняем значение
+        _pinInput.value = pin
+        _errorMessage.value = null
+    }
+
     fun addDigit(digit: Char) {
         val current = _pinInput.value ?: ""
-        if (current.length < 4) {
-            val newPin = current + digit
-            _pinInput.value = newPin
-            _errorMessage.value = null
-            
-            // Автоматическая проверка при вводе 4-й цифры
-            if (newPin.length == 4) {
-                verifyPin()
-            }
-        }
+        val filteredDigit = digit.uppercaseChar().takeIf { it.isLetterOrDigit() } ?: return
+        val newPin = current + filteredDigit
+        _pinInput.value = newPin
+        _errorMessage.value = null
     }
 
     fun removeDigit() {
@@ -49,11 +49,11 @@ class PinInputViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun verifyPin(): Boolean {
-        val inputPin = _pinInput.value ?: ""
-        val correctPin = dataRepository.getPin()
+        val inputPin = (_pinInput.value ?: "").uppercase()
+        val correctPin = dataRepository.getPin().uppercase()
 
-        if (inputPin.length != 4) {
-            _errorMessage.value = "PIN должен состоять из 4 цифр"
+        if (inputPin.isEmpty()) {
+            _errorMessage.value = "Введите PIN-код"
             _isPinCorrect.value = false
             return false
         }
