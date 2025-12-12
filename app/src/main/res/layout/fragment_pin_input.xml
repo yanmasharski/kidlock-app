@@ -10,7 +10,7 @@
         android:id="@+id/tvPinTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Введите PIN-код"
+        android:text="@string/enter_pin_title"
         android:textSize="32sp"
         android:textColor="@android:color/white"
         android:layout_marginTop="32dp"
@@ -20,14 +20,14 @@
         android:id="@+id/etPinInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Введите PIN-код"
+        android:hint="@string/enter_pin_hint"
         android:textSize="24sp"
         android:textColor="@android:color/white"
         android:textColorHint="@android:color/darker_gray"
         android:background="@android:color/transparent"
-        android:inputType="text|textCapCharacters|textNoSuggestions"
+        android:inputType="numberPassword"
         android:imeOptions="actionDone"
-        android:maxLength="20"
+        android:maxLength="6"
         android:padding="16dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
@@ -53,4 +53,3 @@
         android:gravity="center" />
 
 </LinearLayout>
-

@@ -8,273 +8,370 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="32dp">
+        android:padding="16dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
 
         <TextView
             android:id="@+id/tvAdminTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/admin_panel"
-            android:textSize="48sp"
+            android:textSize="32sp"
             android:textColor="@android:color/white"
-            android:layout_marginBottom="32dp" />
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true" />
 
-        <!-- Remaining Time -->
-        <TextView
-            android:id="@+id/tvRemainingTime"
+        <Button
+            android:id="@+id/btnExit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Оставшееся время: --"
-            android:textSize="28sp"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="32dp" />
+            android:text="@string/exit"
+            android:textSize="18sp"
+            android:padding="12dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true" />
 
-        <!-- Daily Limit -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Дневной лимит (минуты):"
-            android:textSize="24sp"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="8dp" />
+    </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
-
-            <EditText
-                android:id="@+id/etDailyLimit"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:inputType="number"
-                android:padding="16dp"
-                android:layout_marginEnd="16dp" />
-
-            <Button
-                android:id="@+id/btnSetLimit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Установить"
-                android:textSize="20sp"
-                android:padding="16dp" />
-
-        </LinearLayout>
-
-        <!-- Generate Codes -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Генерация кодов:"
-            android:textSize="24sp"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
-
-            <EditText
-                android:id="@+id/etCodeCount"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:inputType="number"
-                android:hint="Количество"
-                android:padding="16dp"
-                android:layout_marginEnd="8dp" />
-
-            <EditText
-                android:id="@+id/etMinutesPerCode"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:inputType="number"
-                android:hint="Минут"
-                android:text="30"
-                android:padding="16dp"
-                android:layout_marginEnd="16dp" />
-
-            <Button
-                android:id="@+id/btnGenerateCodes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Сгенерировать"
-                android:textSize="20sp"
-                android:padding="16dp" />
-
-        </LinearLayout>
-
-        <!-- Codes List -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Список кодов:"
-            android:textSize="24sp"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
-
+        <!-- Section Selector -->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvCodes"
-            android:layout_width="match_parent"
-            android:layout_height="400dp"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Change PIN -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Изменить PIN:"
-            android:textSize="24sp"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
-
-        <LinearLayout
+            android:id="@+id/rvSections"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
-
-            <EditText
-                android:id="@+id/etNewPin"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:inputType="number"
-                android:hint="Новый PIN"
-                android:padding="16dp"
-                android:layout_marginEnd="16dp" />
-
-            <Button
-                android:id="@+id/btnChangePin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Изменить"
-                android:textSize="20sp"
-                android:padding="16dp" />
-
-        </LinearLayout>
-
-        <!-- Unlock Button -->
-        <Button
-            android:id="@+id/btnUnlock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Разблокировать"
-            android:textSize="20sp"
-            android:padding="16dp"
-            android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp" />
 
-        <!-- Autostart Setting -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Автозапуск приложения:"
-            android:textSize="24sp"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
-
-        <LinearLayout
+        <!-- Content Area -->
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp"
-            android:gravity="center_vertical">
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Автоматически запускать приложение при включении устройства"
-                android:textSize="20sp"
-                android:textColor="@android:color/white"
-                android:layout_marginEnd="16dp" />
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <Switch
-                android:id="@+id/switchAutostart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                <!-- Section: Codes -->
+                <LinearLayout
+                    android:id="@+id/layout_section_codes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="visible">
 
-        </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/generate_codes_label"
+                        android:textSize="24sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginBottom="8dp" />
 
-        <!-- Permissions Status -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Статус разрешений:"
-            android:textSize="24sp"
-            android:textColor="@android:color/white"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
 
-        <TextView
-            android:id="@+id/tvAccessibilityStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Accessibility Service: --"
-            android:textSize="20sp"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="8dp" />
+                        <EditText
+                            android:id="@+id/etCodeCount"
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:textSize="24sp"
+                            android:inputType="number"
+                            android:hint="@string/code_count_hint"
+                            android:padding="16dp"
+                            android:layout_marginEnd="8dp" />
 
-        <TextView
-            android:id="@+id/tvAccessibilityInstructions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/accessibility_instructions"
-            android:textSize="16sp"
-            android:textColor="@android:color/white"
-            android:padding="12dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginBottom="8dp"
-            android:visibility="gone" />
+                        <EditText
+                            android:id="@+id/etMinutesPerCode"
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:textSize="24sp"
+                            android:inputType="number"
+                            android:hint="@string/minutes_hint"
+                            android:text="30"
+                            android:padding="16dp"
+                            android:layout_marginEnd="16dp" />
 
-        <Button
-            android:id="@+id/btnOpenAccessibilitySettings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Настроить Accessibility Service"
-            android:textSize="18sp"
-            android:padding="12dp"
-            android:layout_marginBottom="16dp" />
+                        <Button
+                            android:id="@+id/btnGenerateCodes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/generate_button"
+                            android:textSize="20sp"
+                            android:padding="16dp" />
 
-        <TextView
-            android:id="@+id/tvUsageStatsStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Usage Stats: --"
-            android:textSize="20sp"
-            android:textColor="@android:color/white"
-            android:layout_marginBottom="8dp" />
+                    </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvUsageStatsInstructions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/usage_stats_instructions"
-            android:textSize="16sp"
-            android:textColor="@android:color/white"
-            android:padding="12dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginBottom="8dp"
-            android:visibility="gone" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/codes_list_label"
+                        android:textSize="24sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp" />
 
-        <Button
-            android:id="@+id/btnOpenUsageStatsSettings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Настроить Usage Stats"
-            android:textSize="18sp"
-            android:padding="12dp"
-            android:layout_marginBottom="16dp" />
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvCodes"
+                        android:layout_width="match_parent"
+                        android:layout_height="400dp"
+                        android:layout_marginBottom="16dp" />
+                </LinearLayout>
+
+                <!-- Section: Time Limits -->
+                <LinearLayout
+                    android:id="@+id/layout_section_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tvRemainingTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/remaining_time_label"
+                        android:textSize="28sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginBottom="32dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/daily_limit_label"
+                        android:textSize="24sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
+
+                        <EditText
+                            android:id="@+id/etDailyLimit"
+                            android:layout_width="200dp"
+                            android:layout_height="wrap_content"
+                            android:textSize="24sp"
+                            android:inputType="number"
+                            android:padding="16dp"
+                            android:layout_marginEnd="16dp" />
+
+                        <Button
+                            android:id="@+id/btnSetLimit"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/set_button"
+                            android:textSize="20sp"
+                            android:padding="16dp" />
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnUnlock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/unlock_button"
+                        android:textSize="20sp"
+                        android:padding="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp" />
+                </LinearLayout>
+
+                <!-- Section: Security -->
+                <LinearLayout
+                    android:id="@+id/layout_section_security"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/change_pin_label"
+                        android:textSize="24sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
+
+                        <EditText
+                            android:id="@+id/etNewPin"
+                            android:layout_width="200dp"
+                            android:layout_height="wrap_content"
+                            android:textSize="24sp"
+                            android:inputType="number"
+                            android:hint="@string/new_pin_hint"
+                            android:padding="16dp"
+                            android:layout_marginEnd="16dp" />
+
+                        <Button
+                            android:id="@+id/btnChangePin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/change_button"
+                            android:textSize="20sp"
+                            android:padding="16dp" />
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Section: Settings -->
+                <LinearLayout
+                    android:id="@+id/layout_section_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/autostart_label"
+                        android:textSize="24sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/autostart_description"
+                            android:textSize="20sp"
+                            android:textColor="@android:color/white"
+                            android:layout_marginEnd="16dp" />
+
+                        <Switch
+                            android:id="@+id/switchAutostart"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_blocking_label"
+                        android:textSize="24sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/app_blocking_description"
+                            android:textSize="20sp"
+                            android:textColor="@android:color/white"
+                            android:layout_marginEnd="16dp" />
+
+                        <Switch
+                            android:id="@+id/switchBlocking"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/permissions_status_label"
+                        android:textSize="24sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvAccessibilityStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/accessibility_status_placeholder"
+                        android:textSize="20sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvAccessibilityInstructions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/accessibility_instructions"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/white"
+                        android:padding="12dp"
+                        android:background="@android:color/darker_gray"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/btnOpenAccessibilitySettings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/accessibility_settings_button"
+                        android:textSize="18sp"
+                        android:padding="12dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <TextView
+                        android:id="@+id/tvUsageStatsStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/usage_stats_status_placeholder"
+                        android:textSize="20sp"
+                        android:textColor="@android:color/white"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvUsageStatsInstructions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/usage_stats_instructions"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/white"
+                        android:padding="12dp"
+                        android:background="@android:color/darker_gray"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/btnOpenUsageStatsSettings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/usage_stats_settings_button"
+                        android:textSize="18sp"
+                        android:padding="12dp"
+                        android:layout_marginBottom="16dp" />
+                </LinearLayout>
+
+            </FrameLayout>
+        </ScrollView>
 
         <!-- Message -->
         <TextView
@@ -287,17 +384,8 @@
             android:layout_marginTop="16dp"
             android:minHeight="32dp" />
 
-        <!-- Exit Button -->
-        <Button
-            android:id="@+id/btnExit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Выход"
-            android:textSize="20sp"
-            android:padding="16dp"
-            android:layout_marginTop="32dp" />
+
 
     </LinearLayout>
 
 </ScrollView>
-

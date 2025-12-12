@@ -53,7 +53,7 @@ class PinInputViewModel(application: Application) : AndroidViewModel(application
         val correctPin = dataRepository.getPin().uppercase()
 
         if (inputPin.isEmpty()) {
-            _errorMessage.value = "Введите PIN-код"
+            _errorMessage.value = getApplication<Application>().getString(R.string.enter_pin_error)
             _isPinCorrect.value = false
             return false
         }
@@ -63,7 +63,7 @@ class PinInputViewModel(application: Application) : AndroidViewModel(application
             _errorMessage.value = null
             return true
         } else {
-            _errorMessage.value = "Неверный PIN"
+            _errorMessage.value = getApplication<Application>().getString(R.string.wrong_pin_error)
             _isPinCorrect.value = false
             clearPin()
             return false

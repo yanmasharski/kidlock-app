@@ -39,12 +39,12 @@ class CodeInputViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun addCharToCode(char: Char) {
         val current = _codeInput.value ?: ""
-        if (current.length < 4) {
+        if (current.length < 6) {
             val newCode = current + char
             _codeInput.value = newCode
             
-            // Автоматическая проверка при вводе 4-го символа
-            if (newCode.length == 4) {
+            // Автоматическая проверка при вводе 6-го символа
+            if (newCode.length == 6) {
                 activateCode()
             }
         }
@@ -64,24 +64,21 @@ class CodeInputViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun activateCode() {
         val codeValue = _codeInput.value ?: ""
-        if (codeValue.length != 4) {
-            _message.value = "Код должен состоять из 4 символов"
+        if (codeValue.length != 6) {
+            _message.value = getApplication<Application>().getString(R.string.code_length_error)
             _isCodeValid.value = false
             return
         }
 
         // Проверяем, нужно ли сбросить дневной лимит ПЕРЕД добавлением времени
-        val lastReset = dataRepository.getLastResetDate()
-        if (TimeManager.shouldResetDailyLimit(lastReset)) {
-            dataRepository.resetDailyData()
-        }
+        dataRepository.ensureDailyResetIfNeeded()
 
         // Сначала проверяем, является ли это кодом доступа
         val code = dataRepository.findCode(codeValue)
         if (code != null) {
             // Это код доступа
             if (code.isUsed) {
-                _message.value = "Код уже использован"
+                _message.value = getApplication<Application>().getString(R.string.code_already_used_error)
                 _isCodeValid.value = false
                 return
             }
@@ -98,7 +95,7 @@ class CodeInputViewModel(application: Application) : AndroidViewModel(applicatio
                 dataRepository.addToAddedTime(code.addedTimeMinutes)
             }
 
-            _message.value = "Код активирован! Добавлено ${code.addedTimeMinutes} минут"
+            _message.value = getApplication<Application>().getString(R.string.code_activated_format, code.addedTimeMinutes)
             _isCodeValid.value = true
             clearCode()
             updateRemainingTime()
@@ -115,17 +112,14 @@ class CodeInputViewModel(application: Application) : AndroidViewModel(applicatio
         }
 
         // Код не найден ни среди кодов доступа, ни как PIN
-        _message.value = "Код не найден"
+        _message.value = getApplication<Application>().getString(R.string.code_not_found_error)
         _isCodeValid.value = false
     }
 
     fun updateRemainingTime() {
         viewModelScope.launch(Dispatchers.IO) {
             // Проверяем, нужно ли сбросить дневной лимит
-            val lastReset = dataRepository.getLastResetDate()
-            if (TimeManager.shouldResetDailyLimit(lastReset)) {
-                dataRepository.resetDailyData()
-            }
+            dataRepository.ensureDailyResetIfNeeded()
 
             val remaining = usageStatsHelper.getRemainingTimeMinutes(
                 dataRepository.getDailyTimeLimitMinutes(),

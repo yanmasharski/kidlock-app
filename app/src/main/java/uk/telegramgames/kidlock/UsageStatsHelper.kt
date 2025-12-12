@@ -69,28 +69,14 @@ class UsageStatsHelper(private val context: Context) {
     }
 
     /**
-     * Получает оставшееся время на основе дневного лимита и использованного времени
-     * @param dailyLimitMinutes дневной лимит в минутах
-     * @param addedTimeMinutes дополнительное время, добавленное через коды
-     * @return оставшееся время в минутах
+     * Получает оставшееся время, учитывая раздельное потребление дневного лимита и бонуса.
+     * Сначала расходуется дневной лимит, затем бонусное время.
      */
     fun getRemainingTimeMinutes(
         dailyLimitMinutes: Int,
         addedTimeMinutes: Int
     ): Int {
-        if (!hasUsageStatsPermission()) {
-            return 0
-        }
-
-        val totalAllowedMinutes = dailyLimitMinutes + addedTimeMinutes
-        val usedTimeMinutes = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            TimeManager.millisToMinutes(getTodayUsageTimeMillis())
-        } else {
-            0
-        }
-
-        val remaining = totalAllowedMinutes - usedTimeMinutes
-        return remaining.coerceAtLeast(0)
+        return getRemainingTimeBreakdown(dailyLimitMinutes, addedTimeMinutes).totalMinutes
     }
 
     /**
@@ -100,7 +86,47 @@ class UsageStatsHelper(private val context: Context) {
         dailyLimitMinutes: Int,
         addedTimeMinutes: Int
     ): Boolean {
-        return getRemainingTimeMinutes(dailyLimitMinutes, addedTimeMinutes) > 0
+        return getRemainingTimeBreakdown(dailyLimitMinutes, addedTimeMinutes).totalMinutes > 0
     }
+
+    /**
+     * Возвращает раздельный остаток по дневному лимиту и бонусу.
+     * bonusRemaining уменьшается только после того, как израсходован дневной лимит.
+     */
+    fun getRemainingTimeBreakdown(
+        dailyLimitMinutes: Int,
+        addedTimeMinutes: Int
+    ): RemainingTimeBreakdown {
+        if (!hasUsageStatsPermission()) {
+            // Без разрешения не можем посчитать использование, показываем весь доступный лимит
+            return RemainingTimeBreakdown(
+                totalMinutes = dailyLimitMinutes + addedTimeMinutes,
+                dailyRemaining = dailyLimitMinutes,
+                bonusRemaining = addedTimeMinutes
+            )
+        }
+
+        val usedTimeMinutes = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            TimeManager.millisToMinutes(getTodayUsageTimeMillis())
+        } else {
+            0
+        }
+
+        val dailyRemaining = (dailyLimitMinutes - usedTimeMinutes).coerceAtLeast(0)
+        val extraUsed = (usedTimeMinutes - dailyLimitMinutes).coerceAtLeast(0)
+        val bonusRemaining = (addedTimeMinutes - extraUsed).coerceAtLeast(0)
+
+        return RemainingTimeBreakdown(
+            totalMinutes = dailyRemaining + bonusRemaining,
+            dailyRemaining = dailyRemaining,
+            bonusRemaining = bonusRemaining
+        )
+    }
+
+    data class RemainingTimeBreakdown(
+        val totalMinutes: Int = 0,
+        val dailyRemaining: Int = 0,
+        val bonusRemaining: Int = 0
+    )
 }
 

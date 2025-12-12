@@ -33,10 +33,18 @@ class AdminActivity : AppCompatActivity() {
     private lateinit var tvUsageStatsInstructions: TextView
     private lateinit var btnOpenUsageStatsSettings: Button
     private lateinit var switchAutostart: Switch
+    private lateinit var switchBlocking: Switch
     private lateinit var tvMessage: TextView
+    private lateinit var rvSections: RecyclerView
+    private lateinit var layoutSectionCodes: View
+    private lateinit var layoutSectionTime: View
+    private lateinit var layoutSectionSecurity: View
+    private lateinit var layoutSectionSettings: View
+
     private lateinit var btnExit: Button
 
     private lateinit var codeAdapter: CodeAdapter
+    private lateinit var sectionAdapter: AdminSectionAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +53,7 @@ class AdminActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[AdminViewModel::class.java]
 
         initViews()
+        setupSections()
         setupRecyclerView()
         setupObservers()
         setupClickListeners()
@@ -54,6 +63,12 @@ class AdminActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
+        rvSections = findViewById(R.id.rvSections)
+        layoutSectionCodes = findViewById(R.id.layout_section_codes)
+        layoutSectionTime = findViewById(R.id.layout_section_time)
+        layoutSectionSecurity = findViewById(R.id.layout_section_security)
+        layoutSectionSettings = findViewById(R.id.layout_section_settings)
+
         tvRemainingTime = findViewById(R.id.tvRemainingTime)
         etDailyLimit = findViewById(R.id.etDailyLimit)
         btnSetLimit = findViewById(R.id.btnSetLimit)
@@ -71,6 +86,7 @@ class AdminActivity : AppCompatActivity() {
         tvUsageStatsInstructions = findViewById(R.id.tvUsageStatsInstructions)
         btnOpenUsageStatsSettings = findViewById(R.id.btnOpenUsageStatsSettings)
         switchAutostart = findViewById(R.id.switchAutostart)
+        switchBlocking = findViewById(R.id.switchBlocking)
         tvMessage = findViewById(R.id.tvMessage)
         btnExit = findViewById(R.id.btnExit)
         
@@ -94,6 +110,32 @@ class AdminActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupSections() {
+        val sections = listOf(
+            AdminSection(1, getString(R.string.section_codes), true),
+            AdminSection(2, getString(R.string.section_time)),
+            AdminSection(3, getString(R.string.section_security)),
+            AdminSection(4, getString(R.string.section_settings))
+        )
+
+        sectionAdapter = AdminSectionAdapter(sections) { section ->
+            updateSectionVisibility(section.id)
+        }
+
+        rvSections.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        rvSections.adapter = sectionAdapter
+        
+        // Initial state
+        updateSectionVisibility(1)
+    }
+
+    private fun updateSectionVisibility(sectionId: Int) {
+        layoutSectionCodes.visibility = if (sectionId == 1) View.VISIBLE else View.GONE
+        layoutSectionTime.visibility = if (sectionId == 2) View.VISIBLE else View.GONE
+        layoutSectionSecurity.visibility = if (sectionId == 3) View.VISIBLE else View.GONE
+        layoutSectionSettings.visibility = if (sectionId == 4) View.VISIBLE else View.GONE
+    }
+
     private fun setupRecyclerView() {
         Log.d("KidLock", "AdminActivity.setupRecyclerView() - инициализация RecyclerView")
         codeAdapter = CodeAdapter(emptyList()) { code ->
@@ -110,7 +152,7 @@ class AdminActivity : AppCompatActivity() {
         }
 
         viewModel.remainingTimeMinutes.observe(this) { minutes ->
-            tvRemainingTime.text = "Оставшееся время: ${TimeManager.formatMinutes(minutes)}"
+            tvRemainingTime.text = getString(R.string.remaining_time_admin_format, TimeManager.formatMinutes(this, minutes))
         }
 
         viewModel.codes.observe(this) { codes ->
@@ -125,7 +167,8 @@ class AdminActivity : AppCompatActivity() {
         }
 
         viewModel.isAccessibilityServiceEnabled.observe(this) { enabled ->
-            tvAccessibilityStatus.text = "Accessibility Service: ${if (enabled) "Включен" else "Выключен"}"
+            val statusText = if (enabled) getString(R.string.accessibility_enabled) else getString(R.string.accessibility_disabled)
+            tvAccessibilityStatus.text = getString(R.string.accessibility_status_format, statusText)
             tvAccessibilityStatus.setTextColor(
                 if (enabled) {
                     getColor(android.R.color.holo_green_light)
@@ -138,7 +181,8 @@ class AdminActivity : AppCompatActivity() {
         }
 
         viewModel.isUsageStatsPermissionGranted.observe(this) { granted ->
-            tvUsageStatsStatus.text = "Usage Stats: ${if (granted) "Разрешено" else "Не разрешено"}"
+            val statusText = if (granted) getString(R.string.usage_stats_granted) else getString(R.string.usage_stats_denied)
+            tvUsageStatsStatus.text = getString(R.string.usage_stats_status_format, statusText)
             tvUsageStatsStatus.setTextColor(
                 if (granted) {
                     getColor(android.R.color.holo_green_light)
@@ -152,6 +196,18 @@ class AdminActivity : AppCompatActivity() {
 
         viewModel.isAutostartEnabled.observe(this) { enabled ->
             switchAutostart.isChecked = enabled
+        }
+
+        viewModel.isBlockingEnabled.observe(this) { enabled ->
+            switchBlocking.isChecked = enabled
+        }
+
+        viewModel.canEnableBlocking.observe(this) { canEnable ->
+            switchBlocking.isEnabled = canEnable
+            // Если блокировка не может быть включена, убеждаемся что она выключена
+            if (!canEnable && switchBlocking.isChecked) {
+                switchBlocking.isChecked = false
+            }
         }
 
         viewModel.message.observe(this) { message ->
@@ -198,6 +254,10 @@ class AdminActivity : AppCompatActivity() {
 
         switchAutostart.setOnCheckedChangeListener { _, isChecked ->
             viewModel.setAutostartEnabled(isChecked)
+        }
+
+        switchBlocking.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setBlockingEnabled(isChecked)
         }
 
         btnExit.setOnClickListener {

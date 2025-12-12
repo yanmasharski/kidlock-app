@@ -21,10 +21,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvMessage: TextView
     private lateinit var btnAdmin: Button
 
-    private val keyboardButtons = mutableMapOf<Char, Button>()
     private var codeInputWatcher: TextWatcher? = null
     private var isUpdatingCodeInput = false
-    private var wasKeyboardVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +38,6 @@ class MainActivity : AppCompatActivity() {
         tvMessage = findViewById(R.id.tvMessage)
         btnAdmin = findViewById(R.id.btnAdmin)
 
-        setupKeyboard()
         setupObservers()
         setupCodeInput()
 
@@ -56,38 +53,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupKeyboard() {
-        val chars = "QWERTYASDFGHZXCVBN0123456789"
-        chars.forEachIndexed { index, char ->
-            val buttonId = resources.getIdentifier("btn$char", "id", packageName)
-            val button = findViewById<Button?>(buttonId)
-            button?.let {
-                keyboardButtons[char] = it
-                it.isFocusable = true
-                it.isFocusableInTouchMode = true
-                it.setOnClickListener { addChar(char) }
-            }
-        }
-
-        findViewById<Button>(R.id.btnBack)?.apply {
-            isFocusable = true
-            isFocusableInTouchMode = true
-            setOnClickListener { removeChar() }
-        }
-        findViewById<Button>(R.id.btnEnter)?.apply {
-            isFocusable = true
-            isFocusableInTouchMode = true
-            setOnClickListener { activateCode() }
-        }
-    }
-
     private fun setupObservers() {
         viewModel.codeInput.observe(this) { code ->
             displayCode(code)
         }
 
         viewModel.remainingTimeMinutes.observe(this) { minutes ->
-            tvRemainingTime.text = "Оставшееся время: ${TimeManager.formatMinutes(minutes)}"
+            tvRemainingTime.text = getString(R.string.remaining_time_format, TimeManager.formatMinutes(this, minutes))
         }
 
         viewModel.message.observe(this) { message ->
@@ -145,12 +117,11 @@ class MainActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {
                 if (isUpdatingCodeInput) return
                 
-                val text = s?.toString()?.uppercase()?.filter { 
-                    it.isLetterOrDigit() && "QWERTYASDFGHZXCVBN0123456789".contains(it) 
-                } ?: ""
+                // Фильтруем - только цифры
+                val text = s?.toString()?.filter { it.isDigit() } ?: ""
                 
-                // Ограничиваем до 4 символов
-                val limitedText = if (text.length > 4) text.substring(0, 4) else text
+                // Ограничиваем до 6 символов
+                val limitedText = if (text.length > 6) text.substring(0, 6) else text
                 
                 val currentCode = viewModel.codeInput.value ?: ""
                 
@@ -199,15 +170,7 @@ class MainActivity : AppCompatActivity() {
             etCodeInput.setCursorVisible(hasFocus)
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             if (hasFocus) {
-                // Показываем клавиатуру при получении фокуса
-                wasKeyboardVisible = true
-                // Используем post для задержки, чтобы фокус успел установиться
-                view.post {
-                    imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
-                }
-            } else {
-                // Запоминаем, что клавиатура была видна
-                wasKeyboardVisible = imm.isAcceptingText
+                imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
             }
         }
     }
@@ -216,7 +179,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         viewModel.updateRemainingTime()
         
-        // Восстанавливаем фокус на поле ввода и показываем клавиатуру
+        // Восстанавливаем фокус на поле ввода и показываем системную клавиатуру
         etCodeInput.post {
             if (!etCodeInput.hasFocus()) {
                 etCodeInput.requestFocus()
@@ -243,7 +206,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             
-            // Обработка ввода с клавиатуры или пульта ДУ
+            // Обработка ввода цифр с клавиатуры или пульта ДУ
             when (event.keyCode) {
                 KeyEvent.KEYCODE_DEL -> {
                     removeChar()
@@ -263,35 +226,8 @@ class MainActivity : AppCompatActivity() {
                 KeyEvent.KEYCODE_7 -> { addChar('7'); return true }
                 KeyEvent.KEYCODE_8 -> { addChar('8'); return true }
                 KeyEvent.KEYCODE_9 -> { addChar('9'); return true }
-                KeyEvent.KEYCODE_A -> { addChar('A'); return true }
-                KeyEvent.KEYCODE_B -> { addChar('B'); return true }
-                KeyEvent.KEYCODE_C -> { addChar('C'); return true }
-                KeyEvent.KEYCODE_D -> { addChar('D'); return true }
-                KeyEvent.KEYCODE_E -> { addChar('E'); return true }
-                KeyEvent.KEYCODE_F -> { addChar('F'); return true }
-                KeyEvent.KEYCODE_G -> { addChar('G'); return true }
-                KeyEvent.KEYCODE_H -> { addChar('H'); return true }
-                KeyEvent.KEYCODE_I -> { addChar('I'); return true }
-                KeyEvent.KEYCODE_J -> { addChar('J'); return true }
-                KeyEvent.KEYCODE_K -> { addChar('K'); return true }
-                KeyEvent.KEYCODE_L -> { addChar('L'); return true }
-                KeyEvent.KEYCODE_M -> { addChar('M'); return true }
-                KeyEvent.KEYCODE_N -> { addChar('N'); return true }
-                KeyEvent.KEYCODE_O -> { addChar('O'); return true }
-                KeyEvent.KEYCODE_P -> { addChar('P'); return true }
-                KeyEvent.KEYCODE_Q -> { addChar('Q'); return true }
-                KeyEvent.KEYCODE_R -> { addChar('R'); return true }
-                KeyEvent.KEYCODE_S -> { addChar('S'); return true }
-                KeyEvent.KEYCODE_T -> { addChar('T'); return true }
-                KeyEvent.KEYCODE_U -> { addChar('U'); return true }
-                KeyEvent.KEYCODE_V -> { addChar('V'); return true }
-                KeyEvent.KEYCODE_W -> { addChar('W'); return true }
-                KeyEvent.KEYCODE_X -> { addChar('X'); return true }
-                KeyEvent.KEYCODE_Y -> { addChar('Y'); return true }
-                KeyEvent.KEYCODE_Z -> { addChar('Z'); return true }
             }
         }
         return super.dispatchKeyEvent(event)
     }
 }
-

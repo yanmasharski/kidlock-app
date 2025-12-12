@@ -1,5 +1,6 @@
 package uk.telegramgames.kidlock
 
+import android.content.Context
 import java.util.Calendar
 
 object TimeManager {
@@ -47,16 +48,15 @@ object TimeManager {
     }
 
     /**
-     * Форматирует минуты в строку "X ч Y мин"
+     * Форматирует минуты в локализованную строку "X ч Y мин" / "X h Y min"
      */
-    fun formatMinutes(minutes: Int): String {
+    fun formatMinutes(context: Context, minutes: Int): String {
         val hours = minutes / 60
         val mins = minutes % 60
         return when {
-            hours > 0 && mins > 0 -> "${hours} ч ${mins} мин"
-            hours > 0 -> "${hours} ч"
-            else -> "${mins} мин"
+            hours > 0 && mins > 0 -> context.getString(R.string.time_format_hours_minutes, hours, mins)
+            hours > 0 -> context.getString(R.string.time_format_hours_only, hours)
+            else -> context.getString(R.string.time_format_minutes_only, mins)
         }
     }
 }
-

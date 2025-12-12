@@ -31,16 +31,21 @@ class CodeAdapter(
         val code = codes[position]
         Log.d("KidLock", "CodeAdapter.onBindViewHolder() - позиция $position, код: ${code.value}, минут: ${code.addedTimeMinutes}, использован: ${code.isUsed}")
         holder.tvCode.text = code.value
-        holder.tvStatus.text = if (code.isUsed) "Использован" else "Не использован"
+        val context = holder.itemView.context
+        holder.tvStatus.text = if (code.isUsed) {
+            context.getString(R.string.code_status_used)
+        } else {
+            context.getString(R.string.code_status_unused)
+        }
         holder.tvStatus.setTextColor(
             if (code.isUsed) {
-                holder.itemView.context.getColor(android.R.color.holo_red_light)
+                context.getColor(android.R.color.holo_red_light)
             } else {
-                holder.itemView.context.getColor(android.R.color.holo_green_light)
+                context.getColor(android.R.color.holo_green_light)
             }
         )
         holder.tvTime.text = if (code.addedTimeMinutes > 0) {
-            "+${code.addedTimeMinutes} мин"
+            context.getString(R.string.time_added_minutes_format, code.addedTimeMinutes)
         } else {
             ""
         }

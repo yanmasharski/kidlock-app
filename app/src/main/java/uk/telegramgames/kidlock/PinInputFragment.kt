@@ -51,13 +51,11 @@ class PinInputFragment : Fragment() {
     }
 
     private fun setupPinInput() {
-        // Отключаем автокоррекцию программно
-        etPinInput.inputType = InputType.TYPE_CLASS_TEXT or 
-            InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS or 
-            InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or
-            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        // Устанавливаем тип ввода - только цифры, скрытый пароль
+        etPinInput.inputType = InputType.TYPE_CLASS_NUMBER or 
+            InputType.TYPE_NUMBER_VARIATION_PASSWORD
         
-        // Используем улучшенный InputFilter с учетом контекста для предотвращения потери символов
+        // Фильтруем ввод - только цифры, максимум 6 символов
         etPinInput.filters = arrayOf(
             InputFilter { source, start, end, dest, dstart, dend ->
                 // Обрабатываем случай удаления (backspace) - разрешаем удаление
@@ -65,16 +63,11 @@ class PinInputFragment : Fragment() {
                     return@InputFilter null
                 }
                 
-                // Защита от некорректных параметров
-                val destLength = dest?.length ?: 0
-                val safeDstart = dstart.coerceIn(0, destLength)
-                val safeDend = dend.coerceIn(safeDstart, destLength)
-                
-                // Фильтруем и преобразуем в верхний регистр новый ввод
+                // Фильтруем - оставляем только цифры
                 val filteredSource = StringBuilder()
                 for (i in start until end) {
-                    val char = source[i].uppercaseChar()
-                    if (char.isLetterOrDigit()) {
+                    val char = source[i]
+                    if (char.isDigit()) {
                         filteredSource.append(char)
                     }
                 }
@@ -84,31 +77,23 @@ class PinInputFragment : Fragment() {
                     return@InputFilter ""
                 }
                 
-                // Строим результирующий текст с учетом контекста
-                // dest - существующий текст, dstart-dend - диапазон для замены
-                val result = StringBuilder()
+                // Проверяем ограничение длины (6 символов)
+                val destLength = dest?.length ?: 0
+                val safeDstart = dstart.coerceIn(0, destLength)
+                val safeDend = dend.coerceIn(safeDstart, destLength)
+                val replacementLength = safeDend - safeDstart
+                val resultLength = destLength - replacementLength + filteredSource.length
                 
-                // Добавляем часть до места вставки (защита от некорректных индексов)
-                if (safeDstart > 0 && safeDstart <= destLength) {
-                    result.append(dest, 0, safeDstart)
+                if (resultLength > 6) {
+                    // Обрезаем ввод, чтобы не превысить 6 символов
+                    val allowedLength = 6 - (destLength - replacementLength)
+                    if (allowedLength <= 0) {
+                        return@InputFilter ""
+                    }
+                    return@InputFilter filteredSource.substring(0, allowedLength.coerceAtMost(filteredSource.length))
                 }
                 
-                // Добавляем отфильтрованный новый текст
-                result.append(filteredSource)
-                
-                // Добавляем часть после места вставки (защита от некорректных индексов)
-                if (safeDend < destLength && safeDend >= 0) {
-                    result.append(dest, safeDend, destLength)
-                }
-                
-                // Проверяем ограничение длины (20 символов)
-                val finalText = result.toString()
-                if (finalText.length > 20) {
-                    // Обрезаем до 20 символов, сохраняя начало
-                    finalText.substring(0, 20)
-                } else {
-                    finalText
-                }
+                filteredSource.toString()
             }
         )
 

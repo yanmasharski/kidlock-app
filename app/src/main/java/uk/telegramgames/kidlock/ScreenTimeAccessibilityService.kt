@@ -73,13 +73,19 @@ class ScreenTimeAccessibilityService : AccessibilityService() {
         // Сохраняем последнее известное приложение для периодической проверки
         lastKnownPackageName = packageName
 
+        // Проверяем, включена ли блокировка
+        if (!dataRepository.isBlockingEnabled()) {
+            return // Блокировка выключена, ничего не делаем
+        }
+
         // Проверяем оставшееся время
+        dataRepository.ensureDailyResetIfNeeded()
         val dailyLimit = dataRepository.getDailyTimeLimitMinutes()
         val addedTime = dataRepository.getAddedTimeMinutes()
         val hasTime = usageStatsHelper.hasRemainingTime(dailyLimit, addedTime)
 
         if (!hasTime) {
-            // Блокируем запуск приложения - возвращаемся на домашний экран
+            // Блокируем запуск приложения - открываем KidLock
             // Проверка KidLock уже выполнена в начале функции, так что он не будет заблокирован
             blockAppLaunch()
             // Также принудительно закрываем приложение, если оно уже запущено
@@ -109,15 +115,14 @@ class ScreenTimeAccessibilityService : AccessibilityService() {
             return
         }
 
-        // Очищаем lastKnownPackageName, так как мы блокируем приложение и возвращаемся на домашний экран
+        // Очищаем lastKnownPackageName, так как мы блокируем приложение и открываем KidLock
         lastKnownPackageName = null
 
-        // Возвращаемся на домашний экран
-        val homeIntent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
+        // Открываем само приложение KidLock вместо главного экрана
+        val kidLockIntent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        startActivity(homeIntent)
+        startActivity(kidLockIntent)
 
         // Показываем уведомление
         showBlockNotification()
@@ -185,6 +190,12 @@ class ScreenTimeAccessibilityService : AccessibilityService() {
      * Проверяет текущее приложение и сворачивает его, если время истекло
      */
     private fun checkAndMinimizeApps() {
+        // Проверяем, включена ли блокировка
+        if (!dataRepository.isBlockingEnabled()) {
+            return // Блокировка выключена, ничего не делаем
+        }
+
+        dataRepository.ensureDailyResetIfNeeded()
         val dailyLimit = dataRepository.getDailyTimeLimitMinutes()
         val addedTime = dataRepository.getAddedTimeMinutes()
         val hasTime = usageStatsHelper.hasRemainingTime(dailyLimit, addedTime)
@@ -313,24 +324,26 @@ class ScreenTimeAccessibilityService : AccessibilityService() {
     }
 
     /**
-     * Сворачивает текущее приложение, возвращаясь на домашний экран
+     * Сворачивает текущее приложение, открывая KidLock
      */
     private fun minimizeCurrentApp() {
         try {
-            // Используем глобальное действие HOME для возврата на домашний экран
-            performGlobalAction(GLOBAL_ACTION_HOME)
-            // Очищаем lastKnownPackageName после возврата на домашний экран
-            handler.postDelayed({
-                lastKnownPackageName = null
-            }, 500) // Небольшая задержка, чтобы убедиться, что мы на домашнем экране
-        } catch (e: Exception) {
-            // Если не получилось, используем Intent
-            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_HOME)
+            // Открываем само приложение KidLock вместо возврата на домашний экран
+            val kidLockIntent = Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
-            startActivity(homeIntent)
-            // Очищаем lastKnownPackageName после возврата на домашний экран
+            startActivity(kidLockIntent)
+            // Очищаем lastKnownPackageName после открытия KidLock
+            handler.postDelayed({
+                lastKnownPackageName = null
+            }, 500) // Небольшая задержка, чтобы убедиться, что KidLock открыт
+        } catch (e: Exception) {
+            // Если не получилось, используем Intent напрямую
+            val kidLockIntent = Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(kidLockIntent)
+            // Очищаем lastKnownPackageName после открытия KidLock
             handler.postDelayed({
                 lastKnownPackageName = null
             }, 500)

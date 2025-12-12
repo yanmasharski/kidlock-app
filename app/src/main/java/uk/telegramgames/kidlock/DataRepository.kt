@@ -20,6 +20,7 @@ class DataRepository private constructor(context: Context) {
         private const val KEY_LAST_RESET_DATE = "last_reset_date"
         private const val KEY_ADDED_TIME = "added_time_minutes"
         private const val KEY_AUTOSTART_ENABLED = "autostart_enabled"
+        private const val KEY_BLOCKING_ENABLED = "blocking_enabled"
 
         @Volatile
         private var INSTANCE: DataRepository? = null
@@ -35,7 +36,7 @@ class DataRepository private constructor(context: Context) {
 
     // PIN
     fun getPin(): String {
-        return prefs.getString(KEY_PIN, "0000") ?: "0000"
+        return prefs.getString(KEY_PIN, "000000") ?: "000000"
     }
 
     fun setPin(pin: String) {
@@ -153,6 +154,15 @@ class DataRepository private constructor(context: Context) {
         prefs.edit().putBoolean(KEY_AUTOSTART_ENABLED, enabled).apply()
     }
 
+    // Blocking functionality
+    fun isBlockingEnabled(): Boolean {
+        return prefs.getBoolean(KEY_BLOCKING_ENABLED, true) // По умолчанию включено
+    }
+
+    fun setBlockingEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_BLOCKING_ENABLED, enabled).apply()
+    }
+
     // Generate new codes
     fun generateCodes(minutesPerCode: Int, count: Int): List<Code> {
         Log.d("KidLock", "DataRepository.generateCodes() вызван: minutesPerCode=$minutesPerCode, count=$count")
@@ -162,14 +172,15 @@ class DataRepository private constructor(context: Context) {
         Log.d("KidLock", "DataRepository.generateCodes() - удаляем старые коды: ${oldCodesCount} шт.")
         saveCodes(emptyList())
         
-        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        val chars = "0123456789"
         val codes = mutableListOf<Code>()
+        val currentPin = getPin() // Получаем текущий PIN для проверки
 
         repeat(count) {
             var codeValue: String
             do {
-                codeValue = (1..4).map { chars.random() }.joinToString("")
-            } while (codes.any { it.value == codeValue })
+                codeValue = (1..6).map { chars.random() }.joinToString("")
+            } while (codes.any { it.value == codeValue } || codeValue == currentPin)
 
             codes.add(Code(value = codeValue, addedTimeMinutes = minutesPerCode))
             Log.d("KidLock", "DataRepository.generateCodes() - сгенерирован код: $codeValue (${minutesPerCode} мин)")
@@ -188,15 +199,42 @@ class DataRepository private constructor(context: Context) {
         setLastResetDate(TimeManager.getTodayStartTime())
     }
 
+    /**
+     * Сбрасывает дневные данные, если наступил новый день.
+     * @return true если сброс был выполнен
+     */
+    fun ensureDailyResetIfNeeded(): Boolean {
+        val lastReset = getLastResetDate()
+        return if (TimeManager.shouldResetDailyLimit(lastReset)) {
+            resetDailyData()
+            true
+        } else {
+            false
+        }
+    }
+
     // Initialize on first launch
     fun initializeIfNeeded() {
         if (getLastResetDate() == 0L) {
             setLastResetDate(TimeManager.getTodayStartTime())
         }
-        // Убеждаемся, что PIN установлен (по умолчанию "0000")
+        // Убеждаемся, что PIN установлен (по умолчанию "000000")
         val currentPin = getPin()
         if (currentPin.isEmpty()) {
-            setPin("0000")
+            setPin("000000")
+        }
+        
+        // Миграция: сбрасываем устаревший 4-значный PIN на значение по умолчанию
+        if (currentPin.length == 4) {
+            Log.d("KidLock", "Migration: resetting obsolete 4-digit PIN to 000000")
+            setPin("000000")
+        }
+        
+        // Миграция: очищаем устаревшие 4-значные коды
+        val codes = getCodes()
+        if (codes.isNotEmpty() && codes.any { it.value.length == 4 }) {
+            Log.d("KidLock", "Migration: clearing obsolete 4-digit codes (${codes.count { it.value.length == 4 }} found)")
+            saveCodes(emptyList())
         }
     }
 }

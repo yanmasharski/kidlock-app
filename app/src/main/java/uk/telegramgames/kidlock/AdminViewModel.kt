@@ -34,6 +34,12 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
     private val _isAutostartEnabled = MutableLiveData<Boolean>()
     val isAutostartEnabled: LiveData<Boolean> = _isAutostartEnabled
 
+    private val _isBlockingEnabled = MutableLiveData<Boolean>()
+    val isBlockingEnabled: LiveData<Boolean> = _isBlockingEnabled
+
+    private val _canEnableBlocking = MutableLiveData<Boolean>()
+    val canEnableBlocking: LiveData<Boolean> = _canEnableBlocking
+
     private val _message = MutableLiveData<String?>()
     val message: LiveData<String?> = _message
 
@@ -47,16 +53,35 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
     fun loadSettings() {
         _dailyLimitMinutes.value = dataRepository.getDailyTimeLimitMinutes()
         _isAutostartEnabled.value = dataRepository.isAutostartEnabled()
+        
+        // Загружаем состояние блокировки, но проверяем разрешения
+        val blockingEnabled = dataRepository.isBlockingEnabled()
+        _isBlockingEnabled.value = blockingEnabled
+        
+        // Проверяем разрешения и устанавливаем canEnableBlocking
+        val isAccessibilityEnabled = ScreenTimeAccessibilityService.isServiceEnabled(
+            getApplication()
+        )
+        val isUsageStatsGranted = usageStatsHelper.hasUsageStatsPermission()
+        val allPermissionsGranted = isAccessibilityEnabled && isUsageStatsGranted
+        _canEnableBlocking.value = allPermissionsGranted
+        
+        // Если разрешения не предоставлены, отключаем блокировку
+        if (!allPermissionsGranted && blockingEnabled) {
+            dataRepository.setBlockingEnabled(false)
+            _isBlockingEnabled.value = false
+        }
     }
 
     fun setDailyLimitMinutes(minutes: Int) {
         if (minutes < 0) {
-            _message.value = "Лимит не может быть отрицательным"
+            _message.value = getApplication<Application>().getString(R.string.limit_negative_error)
             return
         }
         dataRepository.setDailyTimeLimitMinutes(minutes)
         _dailyLimitMinutes.value = minutes
-        _message.value = "Лимит установлен: ${TimeManager.formatMinutes(minutes)}"
+        val formattedTime = TimeManager.formatMinutes(getApplication(), minutes)
+        _message.value = getApplication<Application>().getString(R.string.limit_set_format, formattedTime)
         updateRemainingTime()
     }
 
@@ -64,12 +89,12 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
         Log.d("KidLock", "AdminViewModel.generateCodes() вызван: count=$count, minutesPerCode=$minutesPerCode")
         if (count <= 0 || count > 100) {
             Log.w("KidLock", "AdminViewModel.generateCodes() - неверное количество: $count")
-            _message.value = "Количество кодов должно быть от 1 до 100"
+            _message.value = getApplication<Application>().getString(R.string.code_count_error)
             return
         }
         if (minutesPerCode < 0) {
             Log.w("KidLock", "AdminViewModel.generateCodes() - отрицательное время: $minutesPerCode")
-            _message.value = "Время не может быть отрицательным"
+            _message.value = getApplication<Application>().getString(R.string.time_negative_error)
             return
         }
 
@@ -79,9 +104,8 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
             Log.d("KidLock", "AdminViewModel.generateCodes() - сгенерировано ${newCodes.size} кодов: ${newCodes.map { it.value }}")
             // Загружаем коды на главном потоке для обновления UI
             withContext(Dispatchers.Main) {
-                Log.d("KidLock", "AdminViewModel.generateCodes() - переключаемся на Main поток, вызываем loadCodes()")
                 loadCodes()
-                _message.value = "Сгенерировано ${newCodes.size} кодов по ${minutesPerCode} минут"
+                _message.value = getApplication<Application>().getString(R.string.codes_generated_format, newCodes.size, minutesPerCode)
                 Log.d("KidLock", "AdminViewModel.generateCodes() - завершено, сообщение установлено")
             }
         }
@@ -100,23 +124,23 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
         codes.removeAll { it.value == code.value }
         dataRepository.saveCodes(codes)
         loadCodes()
-        _message.value = "Код удален"
+        _message.value = getApplication<Application>().getString(R.string.code_deleted)
     }
 
     fun changePin(newPin: String) {
-        if (newPin.length != 4 || !newPin.all { it.isDigit() }) {
-            _message.value = "PIN должен состоять из 4 цифр"
+        if (newPin.length != 6 || !newPin.all { it.isDigit() }) {
+            _message.value = getApplication<Application>().getString(R.string.pin_format_error)
             return
         }
         dataRepository.setPin(newPin)
-        _message.value = "PIN изменен"
+        _message.value = getApplication<Application>().getString(R.string.pin_changed)
     }
 
     fun unlock() {
         dataRepository.resetRemainingTime()
         dataRepository.resetAddedTime()
         updateRemainingTime()
-        _message.value = "Время разблокировано"
+        _message.value = getApplication<Application>().getString(R.string.time_unlocked)
     }
 
     fun updateRemainingTime() {
@@ -125,10 +149,7 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
             val addedTime = dataRepository.getAddedTimeMinutes()
 
             // Проверяем, нужно ли сбросить дневной лимит
-            val lastReset = dataRepository.getLastResetDate()
-            if (TimeManager.shouldResetDailyLimit(lastReset)) {
-                dataRepository.resetDailyData()
-            }
+            dataRepository.ensureDailyResetIfNeeded()
 
             val remaining = usageStatsHelper.getRemainingTimeMinutes(
                 dataRepository.getDailyTimeLimitMinutes(),
@@ -140,10 +161,27 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun checkPermissions() {
-        _isAccessibilityServiceEnabled.value = ScreenTimeAccessibilityService.isServiceEnabled(
+        val isAccessibilityEnabled = ScreenTimeAccessibilityService.isServiceEnabled(
             getApplication()
         )
-        _isUsageStatsPermissionGranted.value = usageStatsHelper.hasUsageStatsPermission()
+        val isUsageStatsGranted = usageStatsHelper.hasUsageStatsPermission()
+        
+        _isAccessibilityServiceEnabled.value = isAccessibilityEnabled
+        _isUsageStatsPermissionGranted.value = isUsageStatsGranted
+        
+        // Проверяем, все ли разрешения предоставлены
+        val allPermissionsGranted = isAccessibilityEnabled && isUsageStatsGranted
+        _canEnableBlocking.value = allPermissionsGranted
+        
+        // Если разрешения не предоставлены, автоматически отключаем блокировку
+        if (!allPermissionsGranted) {
+            val currentBlockingState = dataRepository.isBlockingEnabled()
+            if (currentBlockingState) {
+                // Отключаем блокировку, если она была включена
+                dataRepository.setBlockingEnabled(false)
+                _isBlockingEnabled.value = false
+            }
+        }
     }
 
     fun openAccessibilitySettings() {
@@ -159,7 +197,32 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
     fun setAutostartEnabled(enabled: Boolean) {
         dataRepository.setAutostartEnabled(enabled)
         _isAutostartEnabled.value = enabled
-        _message.value = if (enabled) "Автозапуск включен" else "Автозапуск выключен"
+        _message.value = if (enabled) {
+            getApplication<Application>().getString(R.string.autostart_enabled)
+        } else {
+            getApplication<Application>().getString(R.string.autostart_disabled)
+        }
+    }
+
+    fun setBlockingEnabled(enabled: Boolean) {
+        // Проверяем разрешения перед включением
+        val isAccessibilityEnabled = _isAccessibilityServiceEnabled.value ?: false
+        val isUsageStatsGranted = _isUsageStatsPermissionGranted.value ?: false
+        val allPermissionsGranted = isAccessibilityEnabled && isUsageStatsGranted
+        
+        // Если пытаемся включить без разрешений, не позволяем
+        if (enabled && !allPermissionsGranted) {
+            _message.value = getApplication<Application>().getString(R.string.blocking_requires_permissions)
+            return
+        }
+        
+        dataRepository.setBlockingEnabled(enabled)
+        _isBlockingEnabled.value = enabled
+        _message.value = if (enabled) {
+            getApplication<Application>().getString(R.string.blocking_enabled)
+        } else {
+            getApplication<Application>().getString(R.string.blocking_disabled)
+        }
     }
 
     fun clearMessage() {
