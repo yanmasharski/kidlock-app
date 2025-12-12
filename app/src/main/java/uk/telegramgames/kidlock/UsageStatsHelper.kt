@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.content.pm.PackageManager
 import androidx.annotation.RequiresApi
 
 class UsageStatsHelper(private val context: Context) {
@@ -56,11 +57,13 @@ class UsageStatsHelper(private val context: Context) {
             now
         ) ?: return 0L
 
+        // Получаем пакет текущего лаунчера
+        val defaultLauncher = getDefaultLauncherPackage()
+
         // Суммируем время использования всех приложений
         var totalTime = 0L
         for (usageStats in usageStatsList) {
-            // Исключаем само приложение KidLock из подсчета
-            if (usageStats.packageName != context.packageName) {
+            if (!isIgnoredPackage(usageStats.packageName, defaultLauncher)) {
                 totalTime += usageStats.totalTimeInForeground
             }
         }
@@ -128,5 +131,33 @@ class UsageStatsHelper(private val context: Context) {
         val dailyRemaining: Int = 0,
         val bonusRemaining: Int = 0
     )
+
+    private fun isIgnoredPackage(packageName: String, defaultLauncher: String?): Boolean {
+        // 1. KidLock itself
+        if (packageName == context.packageName) return true
+
+        // 2. Default Launcher
+        if (packageName == defaultLauncher) return true
+
+        // 3. Known TV Launchers and System UI
+        return packageName == "com.google.android.leanbacklauncher" ||
+                packageName == "com.google.android.tvlauncher" ||
+                packageName == "com.android.systemui" ||
+                packageName == "android" ||
+                packageName == "com.google.android.tv.settings" ||
+                packageName == "com.android.settings" ||
+                packageName == "com.google.android.backdrop" // Screensaver
+    }
+
+    private fun getDefaultLauncherPackage(): String? {
+        return try {
+            val intent = Intent(Intent.ACTION_MAIN)
+            intent.addCategory(Intent.CATEGORY_HOME)
+            val resolveInfo = context.packageManager.resolveActivity(intent, 0)
+            resolveInfo?.activityInfo?.packageName
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
 

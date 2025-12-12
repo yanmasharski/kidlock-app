@@ -1,6 +1,7 @@
 package uk.telegramgames.kidlock
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -92,7 +93,35 @@ class CodeInputViewModel(application: Application) : AndroidViewModel(applicatio
 
             // Добавляем время (только в addedTimeMinutes, оставшееся время рассчитывается через UsageStatsHelper)
             if (code.addedTimeMinutes > 0) {
-                dataRepository.addToAddedTime(code.addedTimeMinutes)
+                // FIX: Учитываем "долг" по использованию. Если ребенок пересидел лимит (например, 8 часов при лимите 1 час),
+                // простое добавление 10 минут не даст эффекта, так как они сразу "съедятся" долгом.
+                // Мы должны компенсировать этот долг.
+
+                val dailyLimit = dataRepository.getDailyTimeLimitMinutes()
+                val currentAddedTime = dataRepository.getAddedTimeMinutes()
+                
+                // Получаем текущее использование
+                val usedTimeMillis = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    usageStatsHelper.getTodayUsageTimeMillis()
+                } else {
+                    0L
+                }
+                val usedTimeMinutes = TimeManager.millisToMinutes(usedTimeMillis)
+
+                // Считаем, сколько времени было использовано сверх лимита
+                val extraUsed = (usedTimeMinutes - dailyLimit).coerceAtLeast(0)
+                
+                // Считаем "непокрытый долг": то, что еще не покрыто текущим добавленным временем
+                val uncoveredDebt = (extraUsed - currentAddedTime).coerceAtLeast(0)
+                
+                // Добавляем время кода ПЛЮС непокрытый долг
+                val totalToAdd = code.addedTimeMinutes + uncoveredDebt
+                
+                if (uncoveredDebt > 0) {
+                    Log.d("KidLock", "Compensating usage debt: used=$usedTimeMinutes, limit=$dailyLimit, extraUsed=$extraUsed, currentAdded=$currentAddedTime, debt=$uncoveredDebt. Adding $totalToAdd ($code.addedTimeMinutes + $uncoveredDebt)")
+                }
+
+                dataRepository.addToAddedTime(totalToAdd)
             }
 
             _message.value = getApplication<Application>().getString(R.string.code_activated_format, code.addedTimeMinutes)
